@@ -17,6 +17,9 @@ public class Pharmaco_UL extends JFrame {
 	String password = "";
 	int attempt = 0;
 	private JPanel contentPane;
+	Connection con;
+	
+	private JTextArea textAreaEtudes;
 
 	/**
 	 * Launch the application.
@@ -38,7 +41,7 @@ public class Pharmaco_UL extends JFrame {
 	 * Create the frame.
 	 */
 	public Pharmaco_UL() {
-
+		login();
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 539, 494);
@@ -59,6 +62,25 @@ public class Pharmaco_UL extends JFrame {
 		textAreaEtudes.setText("");
 		textAreaEtudes.setBounds(10, 36, 339, 82);
 		contentPane.add(textAreaEtudes);
+		
+				try {
+						Statement stmt = con.createStatement();
+						ResultSet rs = stmt.executeQuery("Select NO_ETUDE, TITRE_ET from TP_ETUDE");
+							boolean more = rs.next();
+							if (more == false) {
+								System.exit(0);
+							}
+			
+							while (more) {
+								String value = rs.getString(1);
+								String value2 = rs.getString(2);
+								textAreaEtudes.setText(value + " " + value2);
+				
+								more = rs.next();
+							}
+				} catch(Exception e) {
+					textAreaEtudes.append("Aucune étude");
+				}
 		
 		JButton btnReherche = new JButton("Rechercher");
 		btnReherche.addActionListener(new ActionListener() {
@@ -97,6 +119,10 @@ public class Pharmaco_UL extends JFrame {
 		contentPane.add(textAreaNomDrogue);
 		
 		JButton btnGO = new JButton("GO");
+		btnGO.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+			}
+		});
 		btnGO.setBounds(152, 125, 89, 23);
 		contentPane.add(btnGO);
 		
@@ -157,7 +183,9 @@ public class Pharmaco_UL extends JFrame {
 		btnQuitter.setBounds(400, 386, 89, 23);
 		contentPane.add(btnQuitter);
 		
-		login();
+		
+		//displayEtude();
+//		test();
 	}
 	
 	public void login() {
@@ -170,7 +198,7 @@ public class Pharmaco_UL extends JFrame {
 			    
 			    //1-initialisation de la connexion.
 				Class.forName("oracle.jdbc.driver.OracleDriver");
-				Connection con = DriverManager.getConnection ("jdbc:oracle:thin:@ift-oracle2k3.fsg.ulaval.ca:1521:ora11g", username, password);
+				con = DriverManager.getConnection ("jdbc:oracle:thin:@ift-oracle2k3.fsg.ulaval.ca:1521:ora11g", username, password);
 			} else {
 				System.exit(0);
 			}
@@ -187,6 +215,32 @@ public class Pharmaco_UL extends JFrame {
 			JOptionPane.showMessageDialog(null, message);
 			login();
 		}
+	}
+	
+	
+	public void displayEtude() {
+		try {
+			Statement stmt = con.createStatement();
+			ResultSet rs = stmt.executeQuery("Select NO_ETUDE, TITRE_ET from TP_ETUDE");
+			boolean more = rs.next();
+			if (more == false) {
+				System.exit(0);
+			}
+			
+			while (more) {
+				String value = rs.getString(1);
+				String value2 = rs.getString(2);
+				textAreaEtudes.setText("bob");
+				
+				more = rs.next();
+			}
+		} catch(Exception e) {
+			//textAreaEtudes.append("Aucune étude");
+		}
+	}
+	
+	public void test() {
+		textAreaEtudes.setText("bob");
 	}
 	
 	
