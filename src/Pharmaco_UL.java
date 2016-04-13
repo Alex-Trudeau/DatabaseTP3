@@ -13,13 +13,18 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 public class Pharmaco_UL extends JFrame {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	String username = "";
 	String password = "";
 	int attempt = 0;
 	private JPanel contentPane;
 	Connection con;
+
 	
-	private JTextArea textAreaEtudes;
+
 
 	/**
 	 * Launch the application.
@@ -43,6 +48,8 @@ public class Pharmaco_UL extends JFrame {
 	public Pharmaco_UL() {
 		login();
 		
+
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 539, 494);
 		contentPane = new JPanel();
@@ -58,6 +65,14 @@ public class Pharmaco_UL extends JFrame {
 		scrollPaneEtudes.setBounds(10, 120, 339, -87);
 		contentPane.add(scrollPaneEtudes);
 		
+		final JTextArea textAreaGene = new JTextArea();
+		textAreaGene.setBounds(337, 149, 113, 22);
+		contentPane.add(textAreaGene);
+		
+		final JTextArea textAreaNoVariant = new JTextArea();
+		textAreaNoVariant.setBounds(215, 149, 60, 22);
+		contentPane.add(textAreaNoVariant);
+		
 		JTextArea textAreaEtudes = new JTextArea();
 		textAreaEtudes.setText("");
 		textAreaEtudes.setBounds(10, 36, 339, 82);
@@ -67,17 +82,15 @@ public class Pharmaco_UL extends JFrame {
 						Statement stmt = con.createStatement();
 						ResultSet rs = stmt.executeQuery("Select NO_ETUDE, TITRE_ET from TP_ETUDE");
 							boolean more = rs.next();
-							if (more == false) {
-								System.exit(0);
-							}
-			
+
 							while (more) {
 								String value = rs.getString(1);
 								String value2 = rs.getString(2);
-								textAreaEtudes.setText(value + " " + value2);
 				
+								textAreaEtudes.append(value + "             " + value2 + "\n");
 								more = rs.next();
 							}
+							
 				} catch(Exception e) {
 					textAreaEtudes.append("Aucune étude");
 				}
@@ -85,6 +98,11 @@ public class Pharmaco_UL extends JFrame {
 		JButton btnReherche = new JButton("Rechercher");
 		btnReherche.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				
+				String NomDrogue = JOptionPane.showInputDialog(contentPane, "Entrez le nom de la drogue");
+				String Gene = JOptionPane.showInputDialog(contentPane, "Entrez le gène");
+				String NoVariant = JOptionPane.showInputDialog(contentPane, "Entrez le numéro de variant");
+				
 			}
 		});
 		btnReherche.setBounds(382, 37, 89, 23);
@@ -106,61 +124,104 @@ public class Pharmaco_UL extends JFrame {
 		lblNomDrogue.setBounds(10, 182, 63, 14);
 		contentPane.add(lblNomDrogue);
 		
-		JTextArea textAreaNoEtude = new JTextArea();
+		final JTextArea textAreaNoEtude = new JTextArea();
 		textAreaNoEtude.setBounds(79, 124, 63, 22);
 		contentPane.add(textAreaNoEtude);
+			
 		
-		JTextArea textAreaNoDrogue = new JTextArea();
+		
+		final JTextArea textAreaNoDrogue = new JTextArea();
 		textAreaNoDrogue.setBounds(79, 149, 63, 22);
 		contentPane.add(textAreaNoDrogue);
 		
-		JTextArea textAreaNomDrogue = new JTextArea();
+		final JTextArea textAreaNomDrogue = new JTextArea();
 		textAreaNomDrogue.setBounds(79, 177, 63, 22);
 		contentPane.add(textAreaNomDrogue);
 		
 		JButton btnGO = new JButton("GO");
 		btnGO.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				String NoEtude = textAreaNoEtude.getText();
+				
+				try {
+					Statement stmt = con.createStatement();
+					ResultSet rs = stmt.executeQuery("Select NO_DROGUE, NO_VAR_GEN, GENE_VAR, NOM_DROGUE from TP_ETUDE where NO_ETUDE ="+NoEtude);
+						boolean more = rs.next();
+						if (more == false) {
+							System.exit(0);
+						}
+		
+						while (more) {
+							String NoDrogue = rs.getString(1);
+							String NoVariant = rs.getString(2);
+							String Gene = rs.getString(3);
+							String NomDrogue = rs.getString(4);
+							textAreaNoDrogue.setText(NoDrogue);
+							textAreaNoVariant.setText(NoVariant);
+							textAreaGene.setText(Gene);
+							textAreaNomDrogue.setText(NomDrogue);
+
+							more = rs.next();
+						}
+						
+			} catch(Exception e) {
+				JOptionPane.showMessageDialog(contentPane, "Numéro d'étude invalide");
+			}
+				
 			}
 		});
 		btnGO.setBounds(152, 125, 89, 23);
 		contentPane.add(btnGO);
+		btnGO.setEnabled(false);
+
 		
 		JButton btnNouveauPatient = new JButton("Nouveau Patient");
+		btnNouveauPatient.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String NoPatient = JOptionPane.showInputDialog(contentPane, "Entrez le numéro do patient");
+				String Province = JOptionPane.showInputDialog(contentPane, "Entrez la province du patient");
+				String IndiceEffMeta = JOptionPane.showInputDialog(contentPane, "Entrez l'indice d'éfficacité métabolique");
+			}
+		});
 		btnNouveauPatient.setBounds(29, 228, 113, 23);
 		contentPane.add(btnNouveauPatient);
+		if (textAreaNoEtude.getText().equals("")) {
+		btnNouveauPatient.setEnabled(false);
+		} else {
+			btnNouveauPatient.setEnabled(true);
+		}
 		
 		JButton btnSupprimerPatient = new JButton("Supprimer Patient");
 		btnSupprimerPatient.setBounds(187, 228, 131, 23);
 		contentPane.add(btnSupprimerPatient);
+		btnSupprimerPatient.setEnabled(false);
 		
 		JButton btnModifierPatient = new JButton("Modifier Patient");
 		btnModifierPatient.setBounds(358, 228, 131, 23);
 		contentPane.add(btnModifierPatient);
+		btnModifierPatient.setEnabled(false);
 		
 		JLabel lblNoVariant = new JLabel("No Variant");
 		lblNoVariant.setBounds(162, 154, 60, 14);
 		contentPane.add(lblNoVariant);
 		
-		JTextArea textAreaNoVariant = new JTextArea();
-		textAreaNoVariant.setBounds(215, 149, 60, 22);
-		contentPane.add(textAreaNoVariant);
+		
 		
 		JLabel lblGene = new JLabel("G\u00E8ne");
 		lblGene.setBounds(303, 154, 46, 14);
 		contentPane.add(lblGene);
 		
-		JTextArea textAreaGene = new JTextArea();
-		textAreaGene.setBounds(337, 149, 113, 22);
-		contentPane.add(textAreaGene);
+		
 		
 		JButton btnDrugBank = new JButton("Aller sur DrugBank");
 		btnDrugBank.setBounds(152, 178, 131, 23);
 		contentPane.add(btnDrugBank);
+		btnDrugBank.setEnabled(false);
 		
 		JButton btnIndiceEff = new JButton("Indice d'\u00E9fficacit\u00E9 m\u00E9tabolique");
 		btnIndiceEff.setBounds(293, 178, 196, 23);
 		contentPane.add(btnIndiceEff);
+		btnIndiceEff.setEnabled(false);
 		
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBounds(20, 375, 451, -87);
@@ -182,10 +243,7 @@ public class Pharmaco_UL extends JFrame {
 		});
 		btnQuitter.setBounds(400, 386, 89, 23);
 		contentPane.add(btnQuitter);
-		
-		
-		//displayEtude();
-//		test();
+
 	}
 	
 	public void login() {
@@ -216,32 +274,5 @@ public class Pharmaco_UL extends JFrame {
 			login();
 		}
 	}
-	
-	
-	public void displayEtude() {
-		try {
-			Statement stmt = con.createStatement();
-			ResultSet rs = stmt.executeQuery("Select NO_ETUDE, TITRE_ET from TP_ETUDE");
-			boolean more = rs.next();
-			if (more == false) {
-				System.exit(0);
-			}
-			
-			while (more) {
-				String value = rs.getString(1);
-				String value2 = rs.getString(2);
-				textAreaEtudes.setText("bob");
-				
-				more = rs.next();
-			}
-		} catch(Exception e) {
-			//textAreaEtudes.append("Aucune étude");
-		}
-	}
-	
-	public void test() {
-		textAreaEtudes.setText("bob");
-	}
-	
 	
 }
