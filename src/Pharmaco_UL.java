@@ -11,6 +11,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 public class Pharmaco_UL extends JFrame {
 	/**
@@ -175,7 +177,7 @@ public class Pharmaco_UL extends JFrame {
 		btnGO.setEnabled(false);
 
 		
-		JButton btnNouveauPatient = new JButton("Nouveau Patient");
+		final JButton btnNouveauPatient = new JButton("Nouveau Patient");
 		btnNouveauPatient.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				String NoPatient = JOptionPane.showInputDialog(contentPane, "Entrez le numéro do patient");
@@ -185,11 +187,7 @@ public class Pharmaco_UL extends JFrame {
 		});
 		btnNouveauPatient.setBounds(29, 228, 113, 23);
 		contentPane.add(btnNouveauPatient);
-		if (textAreaNoEtude.getText().equals("")) {
-		btnNouveauPatient.setEnabled(false);
-		} else {
-			btnNouveauPatient.setEnabled(true);
-		}
+		
 		
 		JButton btnSupprimerPatient = new JButton("Supprimer Patient");
 		btnSupprimerPatient.setBounds(187, 228, 131, 23);
@@ -243,8 +241,34 @@ public class Pharmaco_UL extends JFrame {
 		});
 		btnQuitter.setBounds(400, 386, 89, 23);
 		contentPane.add(btnQuitter);
+		
+		textAreaNoEtude.getDocument().addDocumentListener(new DocumentListener() {
+			public void changedUpdate(DocumentEvent e) {
+				if (textAreaNoEtude.getText().equals("test")) {
+					btnNouveauPatient.setEnabled(false);
+					} else {
+						btnNouveauPatient.setEnabled(true);
+					}
+			  }
+			  public void removeUpdate(DocumentEvent e) {
+				  if (textAreaNoEtude.getText().equals("test")) {
+						btnNouveauPatient.setEnabled(false);
+						} else {
+							btnNouveauPatient.setEnabled(true);
+						}
+			  }
+			  public void insertUpdate(DocumentEvent e) {
+				  if (textAreaNoEtude.getText().equals("test")) {
+						btnNouveauPatient.setEnabled(false);
+						} else {
+							btnNouveauPatient.setEnabled(true);
+						}
+			  }
+		
 
-	}
+	});
+		
+}
 	
 	public void login() {
 		try {
@@ -274,5 +298,7 @@ public class Pharmaco_UL extends JFrame {
 			login();
 		}
 	}
+	
+	
 	
 }
