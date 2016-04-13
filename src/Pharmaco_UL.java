@@ -110,9 +110,7 @@ public class Pharmaco_UL extends JFrame {
 		btnReherche.setBounds(382, 37, 89, 23);
 		contentPane.add(btnReherche);
 		
-		JButton btnAnnuler = new JButton("Annuler");
-		btnAnnuler.setBounds(382, 71, 89, 23);
-		contentPane.add(btnAnnuler);
+		
 		
 		JLabel lblNoEtude = new JLabel("No \u00C9tude");
 		lblNoEtude.setBounds(10, 129, 46, 14);
@@ -129,6 +127,7 @@ public class Pharmaco_UL extends JFrame {
 		final JTextArea textAreaNoEtude = new JTextArea();
 		textAreaNoEtude.setBounds(79, 124, 63, 22);
 		contentPane.add(textAreaNoEtude);
+
 			
 		
 		
@@ -140,7 +139,23 @@ public class Pharmaco_UL extends JFrame {
 		textAreaNomDrogue.setBounds(79, 177, 63, 22);
 		contentPane.add(textAreaNomDrogue);
 		
-		JButton btnGO = new JButton("GO");
+		final JButton btnDrugBank = new JButton("Aller sur DrugBank");
+		btnDrugBank.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					String url = "http://www.google.ca";
+					
+					java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
+				}	catch (java.io.IOException e1) {
+					JOptionPane.showInputDialog(contentPane, e1.getMessage());
+				}
+			}
+		});
+		btnDrugBank.setBounds(152, 178, 131, 23);
+		contentPane.add(btnDrugBank);
+		btnDrugBank.setEnabled(false);
+		
+		final JButton btnGO = new JButton("GO");
 		btnGO.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				String NoEtude = textAreaNoEtude.getText();
@@ -162,6 +177,7 @@ public class Pharmaco_UL extends JFrame {
 							textAreaNoVariant.setText(NoVariant);
 							textAreaGene.setText(Gene);
 							textAreaNomDrogue.setText(NomDrogue);
+							btnDrugBank.setEnabled(true);
 
 							more = rs.next();
 						}
@@ -187,14 +203,20 @@ public class Pharmaco_UL extends JFrame {
 		});
 		btnNouveauPatient.setBounds(29, 228, 113, 23);
 		contentPane.add(btnNouveauPatient);
+		btnNouveauPatient.setEnabled(false);
 		
 		
-		JButton btnSupprimerPatient = new JButton("Supprimer Patient");
+		final JButton btnSupprimerPatient = new JButton("Supprimer Patient");
+		btnSupprimerPatient.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String NoPatient = JOptionPane.showInputDialog(contentPane, "Entrez le numéro do patient à supprimer");
+			}
+		});
 		btnSupprimerPatient.setBounds(187, 228, 131, 23);
 		contentPane.add(btnSupprimerPatient);
 		btnSupprimerPatient.setEnabled(false);
 		
-		JButton btnModifierPatient = new JButton("Modifier Patient");
+		final JButton btnModifierPatient = new JButton("Modifier Patient");
 		btnModifierPatient.setBounds(358, 228, 131, 23);
 		contentPane.add(btnModifierPatient);
 		btnModifierPatient.setEnabled(false);
@@ -202,6 +224,20 @@ public class Pharmaco_UL extends JFrame {
 		JLabel lblNoVariant = new JLabel("No Variant");
 		lblNoVariant.setBounds(162, 154, 60, 14);
 		contentPane.add(lblNoVariant);
+		
+		JButton btnAnnuler = new JButton("Annuler");
+		btnAnnuler.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				textAreaNoEtude.setText("");
+				textAreaNoVariant.setText("");
+				textAreaNoDrogue.setText("");
+				textAreaNomDrogue.setText("");
+				textAreaGene.setText("");
+				
+			}
+		});
+		btnAnnuler.setBounds(382, 71, 89, 23);
+		contentPane.add(btnAnnuler);
 		
 		
 		
@@ -211,10 +247,7 @@ public class Pharmaco_UL extends JFrame {
 		
 		
 		
-		JButton btnDrugBank = new JButton("Aller sur DrugBank");
-		btnDrugBank.setBounds(152, 178, 131, 23);
-		contentPane.add(btnDrugBank);
-		btnDrugBank.setEnabled(false);
+		
 		
 		JButton btnIndiceEff = new JButton("Indice d'\u00E9fficacit\u00E9 m\u00E9tabolique");
 		btnIndiceEff.setBounds(293, 178, 196, 23);
@@ -244,24 +277,42 @@ public class Pharmaco_UL extends JFrame {
 		
 		textAreaNoEtude.getDocument().addDocumentListener(new DocumentListener() {
 			public void changedUpdate(DocumentEvent e) {
-				if (textAreaNoEtude.getText().equals("test")) {
+				if (textAreaNoEtude.getText().equals("")) {
 					btnNouveauPatient.setEnabled(false);
+					btnSupprimerPatient.setEnabled(false);
+					btnModifierPatient.setEnabled(false);
+					btnGO.setEnabled(true);
 					} else {
 						btnNouveauPatient.setEnabled(true);
+						btnSupprimerPatient.setEnabled(true);
+						btnModifierPatient.setEnabled(true);
+						btnGO.setEnabled(true);
 					}
 			  }
 			  public void removeUpdate(DocumentEvent e) {
-				  if (textAreaNoEtude.getText().equals("test")) {
+				  if (textAreaNoEtude.getText().equals("")) {
 						btnNouveauPatient.setEnabled(false);
+						btnSupprimerPatient.setEnabled(false);
+						btnModifierPatient.setEnabled(false);
+						btnGO.setEnabled(true);
 						} else {
 							btnNouveauPatient.setEnabled(true);
+							btnSupprimerPatient.setEnabled(true);
+							btnModifierPatient.setEnabled(true);
+							btnGO.setEnabled(true);
 						}
 			  }
 			  public void insertUpdate(DocumentEvent e) {
-				  if (textAreaNoEtude.getText().equals("test")) {
+				  if (textAreaNoEtude.getText().equals("")) {
 						btnNouveauPatient.setEnabled(false);
+						btnSupprimerPatient.setEnabled(false);
+						btnModifierPatient.setEnabled(false);
+						btnGO.setEnabled(true);
 						} else {
 							btnNouveauPatient.setEnabled(true);
+							btnSupprimerPatient.setEnabled(true);
+							btnModifierPatient.setEnabled(true);
+							btnGO.setEnabled(true);
 						}
 			  }
 		
