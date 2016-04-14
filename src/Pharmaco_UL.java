@@ -189,16 +189,33 @@ public class Pharmaco_UL extends JFrame {
 				JOptionPane.showMessageDialog(contentPane, "Numéro d'étude invalide");
 			}
 		
-		JButton btnReherche = new JButton("Rechercher");
-		btnReherche.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				
-				String NomDrogue = JOptionPane.showInputDialog(contentPane, "Entrez le nom de la drogue");
-				String Gene = JOptionPane.showInputDialog(contentPane, "Entrez le gène");
-				String NoVariant = JOptionPane.showInputDialog(contentPane, "Entrez le numéro de variant");
-				
-			}
-		});
+				JButton btnReherche = new JButton("Rechercher");
+				btnReherche.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent arg0) {
+						
+						String NomDrogue = JOptionPane.showInputDialog(contentPane, "Entrez le nom de la drogue");
+						String Gene = JOptionPane.showInputDialog(contentPane, "Entrez le gène");
+						String NoVariant = JOptionPane.showInputDialog(contentPane, "Entrez le numéro de variant");
+						
+						try {Statement stmt = con.createStatement();
+						ResultSet rs = stmt.executeQuery("select NO_ETUDE from TP_etude where no_var_gen in (select no_var_gen from TP_DROGUE_VARIANT where no_var_gen ='"+NoVariant+"') ");
+						boolean more = rs.next();
+						if (more == false) {
+							System.exit(0);
+						}
+						while (more) {
+							
+							textAreaEtudes.setText("");
+							String NoEtude = rs.getString(1);
+							textAreaEtudes.setText(NoEtude);
+						}
+						
+						}
+						catch(Exception e) {
+							JOptionPane.showMessageDialog(contentPane, "Numéro d'étude invalide");
+						}
+					}
+				});
 		btnReherche.setBounds(382, 37, 89, 23);
 		contentPane.add(btnReherche);
 		
@@ -332,7 +349,13 @@ public class Pharmaco_UL extends JFrame {
 		final JButton btnSupprimerPatient = new JButton("Supprimer Patient");
 		btnSupprimerPatient.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//String NoPatient = JOptionPane.showInputDialog(contentPane, "Entrez le numéro do patient à supprimer");
+				String NoPatient;
+				boolean patientExiste = true;
+				do {
+				NoPatient = JOptionPane.showInputDialog(contentPane, "Entrez le numéro du patient à supprimer");
+				
+				patientExiste = checkPatient(NoPatient);
+				} while (!patientExiste);
 			}
 		});
 		btnSupprimerPatient.setBounds(187, 228, 131, 23);
@@ -493,6 +516,7 @@ public class Pharmaco_UL extends JFrame {
 		
 		
 	}
+	
 	
 	public boolean isAlpha(String name) {
 	    char[] chars = name.toCharArray();
