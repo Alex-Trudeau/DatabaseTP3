@@ -1,4 +1,3 @@
-import java.awt.BorderLayout;
 import java.sql.*;
 import java.awt.EventQueue;
 import javax.swing.JOptionPane;
@@ -13,6 +12,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.border.BevelBorder;
 
 public class Pharmaco_UL extends JFrame {
 	/**
@@ -24,6 +24,7 @@ public class Pharmaco_UL extends JFrame {
 	int attempt = 0;
 	private JPanel contentPane;
 	Connection con;
+	int i = 3;
 
 	
 
@@ -55,7 +56,7 @@ public class Pharmaco_UL extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 539, 494);
 		contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPane.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 		
@@ -103,8 +104,28 @@ public class Pharmaco_UL extends JFrame {
 		final JButton btnDrugBank = new JButton("Aller sur DrugBank");
 		btnDrugBank.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				String NoDrogue = textAreaNoDrogue.getText();
+				String url = "";
 				try {
-					String url = "http://www.google.ca";
+					Statement stmt = con.createStatement();
+					
+					ResultSet rs = stmt.executeQuery("Select URL_DRO from TP_DROGUE where NO_DROGUE="+NoDrogue);						
+
+					if (rs.next()) {
+					url = rs.getString(1);
+				
+					}
+					rs.close();
+					
+				}catch (Exception e2) {
+					JOptionPane.showInputDialog(contentPane, e2.getMessage());
+				}
+				
+				
+				
+				try {
+					
+					
 					
 					java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
 				}	catch (java.io.IOException e1) {
@@ -177,13 +198,19 @@ public class Pharmaco_UL extends JFrame {
 					}
 					rs2.close();
 					ResultSet rs = stmt.executeQuery("select NO_PATIENT, PROVINCE_PAT, INDICE_EFFICACITE_METABO_PAT from TP_PATIENT natural join TP_ETUDE_PATIENT where NO_ETUDE ="+value);						
-					if (rs.next()) {
-							String NoPatient = rs.getString(1);
-							String Province = rs.getString(2);
-							String IndEff = rs.getString(3);
-							textAreaPatient.append(NoPatient + "     " + Province + "      " + IndEff + "\n");
+					boolean more = rs.next();
+					if (more == false) {
+						JOptionPane.showMessageDialog(contentPane, "Aucun patient pour cette étude");
 					}
-					rs.close();
+	
+					while (more) {
+						String NoPatient = rs.getString(1);
+						String Province = rs.getString(2);
+						String IndEff = rs.getString(3);
+						textAreaPatient.append(NoPatient + "     " + Province + "      " + IndEff + "\n");
+
+						more = rs.next();
+					}
 						
 			} catch(Exception e) {
 				JOptionPane.showMessageDialog(contentPane, "Numéro d'étude invalide");
@@ -193,8 +220,8 @@ public class Pharmaco_UL extends JFrame {
 				btnReherche.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent arg0) {
 						
-						String NomDrogue = JOptionPane.showInputDialog(contentPane, "Entrez le nom de la drogue");
-						String Gene = JOptionPane.showInputDialog(contentPane, "Entrez le gène");
+	//					String NomDrogue = JOptionPane.showInputDialog(contentPane, "Entrez le nom de la drogue");
+	//					String Gene = JOptionPane.showInputDialog(contentPane, "Entrez le gène");
 						String NoVariant = JOptionPane.showInputDialog(contentPane, "Entrez le numéro de variant");
 						
 						try {Statement stmt = con.createStatement();
@@ -310,6 +337,9 @@ public class Pharmaco_UL extends JFrame {
 				String NoPatient;
 				String Province;
 				String IndiceEffMeta;
+				float IndiceEff;
+				
+				i = i + 1;
 				boolean patientExiste = false;
 				do {
 				NoPatient = JOptionPane.showInputDialog(contentPane, "Entrez le numéro du patient");
@@ -326,12 +356,16 @@ public class Pharmaco_UL extends JFrame {
 				boolean indiceValide;
 				do {
 				IndiceEffMeta = JOptionPane.showInputDialog(contentPane, "Entrez l'indice d'éfficacité métabolique");
-				indiceValide = valideIndEffe(IndiceEffMeta);
+				IndiceEff = Float.parseFloat(IndiceEffMeta);
+				indiceValide = valideIndEffe(IndiceEff);
 				} while (!indiceValide);
 				
 				try {
+					
 					Statement stmt = con.createStatement();
-					stmt.executeQuery("insert into TP_PATIENT values ('"+NoPatient+"' , 9 , 'F', '"+Province+"', 'Terrebonne' ,"+IndiceEffMeta+")");	
+					Statement stmt2 = con.createStatement();
+					stmt.executeQuery("insert into TP_PATIENT values ('"+NoPatient+"' , null , null, '"+Province+"', null ,"+IndiceEff+")");	
+					stmt2.executeQuery("insert into TP_ETUDE_PATIENT values ("+NoEtude+", "+i+", '"+NoPatient+"')");
 					JOptionPane.showMessageDialog(contentPane, "Patient ajouté dans l'étude:"+NoEtude);
 				
 					} catch(Exception e) {
@@ -348,7 +382,7 @@ public class Pharmaco_UL extends JFrame {
 		
 		final JButton btnSupprimerPatient = new JButton("Supprimer Patient");
 		btnSupprimerPatient.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent arg0) {
 				String NoPatient;
 				boolean patientExiste = true;
 				do {
@@ -356,6 +390,16 @@ public class Pharmaco_UL extends JFrame {
 				
 				patientExiste = checkPatient(NoPatient);
 				} while (!patientExiste);
+				
+				try {
+					Statement stmt = con.createStatement();
+					stmt.executeQuery("delete from TP_ETUDE_PATIENT where NO_PATIENT = '"+NoPatient+"'");
+					JOptionPane.showMessageDialog(contentPane, "Patient enlevé dans l'étude:"+NoPatient+"");
+				} catch(Exception e) {
+					JOptionPane.showMessageDialog(contentPane, "Le patient n'a pas été enlevé");
+				}
+				
+				
 			}
 		});
 		btnSupprimerPatient.setBounds(187, 228, 131, 23);
@@ -363,6 +407,61 @@ public class Pharmaco_UL extends JFrame {
 		btnSupprimerPatient.setEnabled(false);
 		
 		final JButton btnModifierPatient = new JButton("Modifier Patient");
+		btnModifierPatient.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String NoEtude = textAreaNoEtude.getText();
+				String NoPatient;
+				String Province;
+				String IndiceEffMeta;
+				float IndiceEff;
+				
+				boolean patientExiste;
+				if( patientExiste = true){
+				//do {
+				NoPatient = JOptionPane.showInputDialog(contentPane, "Entrez le numéro du patient à modifier");
+								//patientExiste = checkPatient(NoPatient);
+				
+				//} while (!patientExiste);
+				boolean provinceValide;
+				do {
+				//Province.setText(Province);
+				Province = JOptionPane.showInputDialog(contentPane, "Entrez la nouvelle province du patient");
+				provinceValide = isAlpha(Province);
+				} while (!provinceValide);
+				
+				boolean indiceValide;
+				//IndiceEffMeta.setTsext(IndiceEffMeta);
+				do {
+				IndiceEffMeta = JOptionPane.showInputDialog(contentPane, "Entrez le nouvelle l'indice d'éfficacité métabolique");
+				
+				IndiceEff = Float.parseFloat(IndiceEffMeta);
+				indiceValide = valideIndEffe(IndiceEff);
+				} while (!indiceValide);
+				try {
+					PreparedStatement pstmt = con.prepareStatement( "update TP_PATIENT set PROVINCE_PAT=?,indice_efficacite_metabo_pat= ? where no_patient= ?");
+				
+				pstmt.setString(1,Province);
+				pstmt.setFloat(2,IndiceEff);
+				pstmt.setString(3,NoPatient);
+				pstmt.executeUpdate();
+				JOptionPane.showMessageDialog(contentPane, "Patient "+NoPatient+ " modifiee");
+			
+				} catch(Exception ex) {
+						JOptionPane.showMessageDialog(null, ex.getMessage());
+				}
+				
+				
+				}
+				else{
+					JOptionPane.showMessageDialog(contentPane, "Numero de patient invalide");
+				}
+				
+				
+				
+				
+				
+			}
+		});
 		btnModifierPatient.setBounds(358, 228, 131, 23);
 		contentPane.add(btnModifierPatient);
 		btnModifierPatient.setEnabled(false);
@@ -395,7 +494,24 @@ public class Pharmaco_UL extends JFrame {
 		
 		
 		
-		JButton btnIndiceEff = new JButton("Indice d'\u00E9fficacit\u00E9 m\u00E9tabolique");
+		final JButton btnIndiceEff = new JButton("Indice d'\u00E9fficacit\u00E9 m\u00E9tabolique");
+		btnIndiceEff.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String NoEtude = textAreaNoEtude.getText();
+				try {
+					Statement stmt = con.createStatement();
+				ResultSet rs = stmt.executeQuery("select FCT_AVG_INDICE_METABO("+NoEtude+") from dual");
+				if (rs.next()) {
+					String IndEff = rs.getString(1);
+					JOptionPane.showMessageDialog(contentPane, "La moyenne d'indice d'éfficacité est:    "+IndEff);
+				}
+			rs.close();
+					
+			} catch(Exception e) {
+				JOptionPane.showMessageDialog(contentPane, "Ne peut afficher la moyenne");
+			}
+			}
+		});
 		btnIndiceEff.setBounds(293, 178, 196, 23);
 		contentPane.add(btnIndiceEff);
 		btnIndiceEff.setEnabled(false);
@@ -431,6 +547,7 @@ public class Pharmaco_UL extends JFrame {
 						btnSupprimerPatient.setEnabled(true);
 						btnModifierPatient.setEnabled(true);
 						btnGO.setEnabled(true);
+						btnIndiceEff.setEnabled(true);
 					}
 			  }
 			  public void removeUpdate(DocumentEvent e) {
@@ -444,6 +561,7 @@ public class Pharmaco_UL extends JFrame {
 							btnSupprimerPatient.setEnabled(true);
 							btnModifierPatient.setEnabled(true);
 							btnGO.setEnabled(true);
+							btnIndiceEff.setEnabled(true);
 						}
 			  }
 			  public void insertUpdate(DocumentEvent e) {
@@ -457,6 +575,7 @@ public class Pharmaco_UL extends JFrame {
 							btnSupprimerPatient.setEnabled(true);
 							btnModifierPatient.setEnabled(true);
 							btnGO.setEnabled(true);
+							btnIndiceEff.setEnabled(true);
 						}
 			  }
 		
@@ -531,11 +650,11 @@ public class Pharmaco_UL extends JFrame {
 	    return true;
 	}
 	
-	public boolean valideIndEffe(String indice) {
+	public boolean valideIndEffe(float indice) {
 		
 
-		float indiceEff = Float.parseFloat(indice);
-		if (indiceEff <= 1 && indiceEff >= 0){
+		
+		if (indice <= 1 && indice >= 0){
 			return true;			
 		}
 		else{
